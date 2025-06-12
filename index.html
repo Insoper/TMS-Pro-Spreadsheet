@@ -1088,15 +1088,16 @@ async function exportToGoogleSheets() {
       ...rows
     ];
 
-    const response = await fetch("https://script.google.com/macros/s/AKfycbxBkzJt9-0PttwQmIPM3qUD1xW-xs_w_s6MNz-yXUpsAjWpC4LNV4MLmJTTKkpWrAkd/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: finalData })
-    });
+    const response = await fetch("https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec", {
+  method: "POST",
+  mode: "no-cors",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ data: finalData })
+});
 
-    const text = await response.text();
-    console.log("✅ Response dari Google Sheets:", text);
-    alert("✅ Data berhasil dikirim: " + text);
+alert("✅ Data berhasil dikirim ke Google Sheets");
 
   } catch (err) {
     console.error("❌ Gagal mengirim:", err);
