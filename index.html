@@ -1064,44 +1064,43 @@ if ('serviceWorker' in navigator) {
 
 <script>
 async function exportToGoogleSheets() {
-  const table = document.querySelector("#resume table");
-  if (!table) return alert("Tidak ada data untuk dikirim.");
-
-  const output = document.getElementById("output").innerText.trim().split("\n");
-
-  const ringkasan = output.map(line => {
-    const idx = line.indexOf(":");
-    if (idx === -1) return [line.trim(), ""];
-    const key = line.substring(0, idx).trim();
-    const value = line.substring(idx + 1).trim();
-    return [key, value];
-  });
-
-  const rows = Array.from(table.rows).map(row =>
-    Array.from(row.cells).map(cell => cell.innerText.trim())
-  );
-
-  // Gabungkan semuanya menjadi satu array
-  const finalData = [
-    ["RINGKASAN PRODUKTIVITAS", ""],
-    ...ringkasan,
-    [],
-    ["DETAIL LANGKAH OPERASI"],
-    ...rows
-  ];
-
+  async function exportToGoogleSheets() {
   try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbxBkzJt9-0PttwQmIPM3qUD1xW-xs_w_s6MNz-yXUpsAjWpC4LNV4MLmJTTKkpWrAkd/exec", {
+    console.log("🔄 Mulai ekspor...");
+    const table = document.querySelector("#resume table");
+    if (!table) return alert("❗ Tidak ada data untuk dikirim.");
+
+    const output = document.getElementById("output").innerText.trim().split("\n");
+    const ringkasan = output.map(line => {
+      const idx = line.indexOf(":");
+      if (idx === -1) return [line.trim(), ""];
+      return [line.substring(0, idx).trim(), line.substring(idx + 1).trim()];
+    });
+
+    const rows = Array.from(table.rows).map(row =>
+      Array.from(row.cells).map(cell => cell.innerText.trim())
+    );
+
+    const finalData = [
+      ["RINGKASAN PRODUKTIVITAS", ""],
+      ...ringkasan,
+      [],
+      ["DETAIL LANGKAH OPERASI"],
+      ...rows
+    ];
+
+    const response = await fetch("https://script.google.com/macros/s/AKfycbxBkzJt9-0PttwQmIPM3qUD1xW-xs_w_s6MNz-yXUpsAjWpC4LNV4MLmJTTKkpWrAkd/exec", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data: finalData })
     });
 
-    const result = await res.text();
-    alert("Data berhasil dikirim ke Google Sheets: " + result);
+    const text = await response.text();
+    console.log("✅ Response dari Google Sheets:", text);
+    alert("✅ Data berhasil dikirim: " + text);
+
   } catch (err) {
+    console.error("❌ Gagal mengirim:", err);
     alert("Gagal mengirim data: " + err.message);
   }
 }
