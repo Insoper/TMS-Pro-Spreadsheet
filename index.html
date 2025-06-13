@@ -1056,28 +1056,23 @@ function exportExcel() {
 }
 </script>
 
+<button onclick="exportToGoogleSheets()">📤 Export ke Google Sheets</button>
+
 <script>
 function exportToGoogleSheets() {
-  const table = document.querySelector("#resume table");
-  if (!table) return alert("Tidak ada data untuk dikirim.");
+  const data = [
+    ["Primary Work", "Dig to Load", "12.34", "1.0"],
+    ["Primary Work", "Swing Loaded", "5.67", "1.0"]
+  ]; // Contoh data. GANTI dengan data kamu → dari #resume table
 
-  const rows = Array.from(table.rows).slice(1).map(row =>
-    Array.from(row.cells).map(cell => cell.innerText.trim())
-  );
+  const dataParam = encodeURIComponent(JSON.stringify(data));
 
-  const dataParam = encodeURIComponent(JSON.stringify(rows));
+  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam}`;
 
-  // URL Web Apps Google Apps Script
-  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam};`;
-
-  // Redirect browser → TANPA fetch → TANPA CORS ERROR
-  window.open(url, "_blank"); // buka tab baru → kirim → tampil hasil → tanpa error
+  // DIJAMIN TIDAK KENA CORS
+  window.open(url, "_blank");
 }
 </script>
-
-
-<iframe name="dummyFrame" style="display:none;"></iframe>
-
 
 
 </div>
