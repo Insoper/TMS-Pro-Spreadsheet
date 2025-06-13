@@ -1068,7 +1068,7 @@ function exportToGoogleSheets() {
   const dataParam = encodeURIComponent(JSON.stringify(rows));
 
   // URL Web Apps Google Apps Script
-  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec`;
+  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam};`;
 
   // Redirect browser → TANPA fetch → TANPA CORS ERROR
   window.open(url, "_blank"); // buka tab baru → kirim → tampil hasil → tanpa error
