@@ -1065,19 +1065,13 @@ function exportToGoogleSheets() {
     Array.from(row.cells).map(cell => cell.innerText.trim())
   );
 
-  // Konversi seluruh array menjadi JSON string
   const dataParam = encodeURIComponent(JSON.stringify(rows));
 
-  // URL Web Apps Google Apps Script (GANTI DENGAN URL MILIKMU)
+  // URL Web Apps Google Apps Script
   const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam}`;
 
-  fetch(url)
-    .then(res => res.text())
-    .then(result => alert(result))
-    .catch(err => {
-      console.error(err);
-      alert("❌ Gagal mengirim data ke Google Sheets.");
-    });
+  // Redirect browser → TANPA fetch → TANPA CORS ERROR
+  window.open(url, "_blank"); // buka tab baru → kirim → tampil hasil → tanpa error
 }
 </script>
 
