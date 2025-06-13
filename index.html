@@ -1062,29 +1062,31 @@ function exportToGoogleSheets() {
   if (!table) return alert("Tidak ada data untuk dikirim.");
 
   const rows = Array.from(table.rows).slice(1).map(row =>
-    Array.from(row.cells).map(cell => cell.innerText)
+    Array.from(row.cells).map(cell => cell.innerText.trim())
   );
 
-  rows.forEach((row, index) => {
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec";
-    form.target = "dummyFrame";
+  const payload = {
+    data: rows
+  };
 
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "data";
-    input.value = JSON.stringify(row);
-
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
+  fetch("https://script.google.com/macros/s/AKfycbxxx.../exec", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.text())
+  .then(result => {
+    alert(result);
+  })
+  .catch(err => {
+    console.error(err);
+    alert("❌ Gagal mengirim data ke Google Sheets.");
   });
-
-  alert("Data telah dikirim ke Google Sheets.");
 }
 </script>
+
 <iframe name="dummyFrame" style="display:none;"></iframe>
 
 
