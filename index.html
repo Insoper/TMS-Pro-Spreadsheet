@@ -1055,12 +1055,15 @@ function exportExcel() {
   XLSX.writeFile(wb, "TMSPro_Report.xlsx");
 }
 
-if ('serviceWorker' in navigator) {
+<!--
+  if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
     .then(() => console.log('SW registered'))
     .catch(err => console.error('SW registration failed:', err));
 }
-
+-->
+  
+  
 </script>
 
 <script>
@@ -1068,26 +1071,32 @@ function exportToGoogleSheets() {
   const table = document.querySelector("#resume table");
   if (!table) return alert("Tidak ada data untuk dikirim.");
 
-  const rows = Array.from(table.rows).slice(1).map(row => {
-    return Array.from(row.cells).map(cell => cell.innerText);
+  const rows = Array.from(table.rows).slice(1).map(row =>
+    Array.from(row.cells).map(cell => cell.innerText)
+  );
+
+  rows.forEach((row, index) => {
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec"; // GANTI DENGAN PUNYAMU
+    form.target = "dummyFrame"; // agar tidak reload
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "data";
+    input.value = JSON.stringify(row);
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
   });
 
-  rows.forEach(row => {
-    fetch("https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec", {
-      method: "POST",
-      body: JSON.stringify(row),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-    .then(res => res.text())
-    .then(res => console.log("Response:", res))
-    .catch(err => console.error("Error:", err));
-  });
-
-  alert("Data berhasil dikirim ke Google Sheets.");
+  alert("Data dikirim ke Google Sheets (gunakan koneksi internet stabil).");
 }
 </script>
+<iframe name="dummyFrame" style="display:none;"></iframe>
+
 
 </div>
 <!-- Petunjuk Install untuk iOS -->
