@@ -1068,8 +1068,8 @@ function exportToGoogleSheets() {
   rows.forEach((row, index) => {
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec"; // GANTI DENGAN PUNYAMU
-    form.target = "dummyFrame"; // agar tidak reload
+    form.action = "https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec";
+    form.target = "dummyFrame";
 
     const input = document.createElement("input");
     input.type = "hidden";
@@ -1082,10 +1082,11 @@ function exportToGoogleSheets() {
     form.remove();
   });
 
-  alert("Data dikirim ke Google Sheets (gunakan koneksi internet stabil).");
+  alert("Data telah dikirim ke Google Sheets.");
 }
 </script>
 <iframe name="dummyFrame" style="display:none;"></iframe>
+
 
 
 </div>
