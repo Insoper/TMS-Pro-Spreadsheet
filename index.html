@@ -1062,44 +1062,30 @@ if ('serviceWorker' in navigator) {
 
 </script>
 
-<script>
-function exportToGoogleSheets() {
-  const url = "https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec"; // Ganti dengan URL Web App Anda
 
-  const output = document.getElementById("output").innerText.trim().split("\n");
-  const summary = {};
-  output.forEach(line => {
-    const [key, value] = line.split(":");
-    if (key && value) {
-      summary[key.trim()] = value.trim();
-    }
+function exportToGoogleSheets() {
+  const table = document.querySelector("#resume table");
+  if (!table) return alert("Tidak ada data untuk dikirim.");
+
+  const rows = Array.from(table.rows).slice(1).map(row => {
+    return Array.from(row.cells).map(cell => cell.innerText);
   });
 
-  const data = {
-    typeAlat: summary["Type Alat"] || "",
-    kapasitasBucket: summary["Kapasitas Bucket"] || "",
-    metodeLoading: summary["Metode Loading"] || "",
-    jumlahTruck: summary["Jumlah Truck"] || "",
-    totalDuration: summary["Total Duration"] || "",
-    avgCycleTime: summary["Average Cycle Time/Pass"] || "",
-    primaryTime: summary["Primary Times"] || "",
-    secondaryTime: summary["Secondary Times"] || "",
-    efficiency: summary["Work Efficiency"] || "",
-    avgFill: summary["Average Bucket Fill Factor"] || "",
-    dumpCount: summary["Total Bucket Pass (Dump Count)"] || "",
-    productivity: summary["Productivity"] || "",
-  };
+  rows.forEach(row => {
+    fetch("https://script.google.com/macros/s/AKfycbyHfkN1ytPw0jcWiPj9TrGHbglwmF4wbvyhQptraJAvYy1O5U-ms94Y62B1UhyVqjk/exec", {
+      method: "POST",
+      body: JSON.stringify(row),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(res => res.text())
+    .then(res => console.log("Response:", res))
+    .catch(err => console.error("Error:", err));
+  });
 
-  fetch(url, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.text())
-  .then(msg => alert("Export ke Google Sheets berhasil."))
-  .catch(err => alert("Gagal export ke Google Sheets.\n" + err));
+  alert("Data berhasil dikirim ke Google Sheets.");
 }
-</script>
 
 
 </div>
