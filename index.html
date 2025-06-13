@@ -1065,27 +1065,22 @@ function exportToGoogleSheets() {
     Array.from(row.cells).map(cell => cell.innerText.trim())
   );
 
-  const payload = {
-    data: rows
-  };
+  // Konversi seluruh array menjadi JSON string
+  const dataParam = encodeURIComponent(JSON.stringify(rows));
 
-  fetch("https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.text())
-  .then(result => {
-    alert(result);
-  })
-  .catch(err => {
-    console.error(err);
-    alert("❌ Gagal mengirim data ke Google Sheets.");
-  });
+  // URL Web Apps Google Apps Script (GANTI DENGAN URL MILIKMU)
+  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(result => alert(result))
+    .catch(err => {
+      console.error(err);
+      alert("❌ Gagal mengirim data ke Google Sheets.");
+    });
 }
 </script>
+
 
 <iframe name="dummyFrame" style="display:none;"></iframe>
 
