@@ -1057,20 +1057,72 @@ function exportExcel() {
 </script>
 
 <button onclick="exportToGoogleSheets()">📤 Export ke Google Sheets</button>
+  
 
 <script>
 function exportToGoogleSheets() {
-  const data = [
-    ["Primary Work", "Dig to Load", "12.34", "1.0"],
-    ["Primary Work", "Swing Loaded", "5.67", "1.0"]
-  ]; // Contoh data. GANTI dengan data kamu → dari #resume table
+  if (logs.length === 0) {
+    alert("Belum ada data yang bisa diekspor");
+    return;
+  }
 
-  const dataParam = encodeURIComponent(JSON.stringify(data));
-
-  const url = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?data=${dataParam}`;
-
-  // DIJAMIN TIDAK KENA CORS
-  window.open(url, "_blank");
+  const typeAlat = document.getElementById("typeAlat").value;
+  const kapasitas = document.getElementById("kapasitasBucket").value;
+  const metode = document.getElementById("metodeLoading").value;
+  
+  // Siapkan data header
+  const header = [
+    "Tanggal",
+    "Type Alat",
+    "Kapasitas Bucket (m³)",
+    "Metode Loading",
+    "Jumlah Truck",
+    "Total Durasi (s)",
+    "Produktivitas (m³/jam)"
+  ];
+  
+  // Hitung total durasi
+  const totalDurasi = logs.reduce((sum, log) => sum + log.durasi, 0);
+  
+  // Hitung produktivitas
+  const bucket = parseFloat(kapasitas) || 1;
+  const primary = logs.filter(l => l.category === 'Primary Work');
+  const totalPrimary = primary.reduce((a,b) => a + b.durasi, 0);
+  const totalSecondary = logs.reduce((a,b) => a + b.durasi, 0) - totalPrimary;
+  const dumpCount = primary.filter(l => l.item.toLowerCase().includes("dump")).length;
+  const avgCycleTime = dumpCount > 0 ? totalPrimary / dumpCount : 0;
+  const efficiency = totalPrimary / (totalPrimary + totalSecondary);
+  const avgFill = logs.reduce((a,b)=>a+b.fillFactor,0) / logs.length;
+  const produksi = (bucket * avgFill * 3600 * efficiency) / (avgCycleTime || 1);
+  
+  // Data utama
+  const mainData = [
+    new Date().toLocaleString(),
+    typeAlat,
+    kapasitas,
+    metode,
+    truckCount,
+    totalDurasi.toFixed(2),
+    produksi.toFixed(2)
+  ];
+  
+  // Gabungkan semua data
+  const allData = [header, mainData];
+  
+  // URL Google Apps Script Anda (ganti dengan URL Anda)
+  const scriptUrl = "https://script.google.com/macros/s/SCRIPT_ID/exec";
+  
+  // Kirim data
+  fetch(scriptUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "data=" + encodeURIComponent(JSON.stringify(allData.flat()))
+  })
+  .then(() => alert("Data berhasil dikirim ke Google Spreadsheet"))
+  .catch(err => alert("Error: " + err.message));
 }
 </script>
 
