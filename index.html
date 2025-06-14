@@ -1061,43 +1061,55 @@ function exportExcel() {
 
 <script>
 function exportToGoogleSheets() {
-  // 1. Validasi data
-  if (logs.length === 0) {
-    alert("Tidak ada data untuk diekspor!");
-    return;
-  }
-
-  // 2. Siapkan data
-  const data = {
-    typeAlat: document.getElementById("typeAlat").value || "N/A",
-    kapasitasBucket: document.getElementById("kapasitasBucket").value || "N/A",
-    metodeLoading: document.getElementById("metodeLoading").value || "N/A",
-    truckCount: truckCount.toString(),
-    logs: JSON.stringify(logs)
-  };
-
-  // 3. URL proxy (sesuaikan dengan path repo Anda)
-  const proxyUrl = "https://insoper.github.io/TMS-Pro-Spreadsheet/proxy.html";
-  
-  // 4. Buka tab baru untuk proxy
-  const proxyWindow = window.open(`${proxyUrl}?${new URLSearchParams(data).toString()}`, "_blank", "width=500,height=300");
-  
-  // 5. Terima response dari proxy
-  const handleMessage = (event) => {
-    // Sesuaikan origin dengan domain Anda
-    if (event.origin !== "https://insoper.github.io") return;
-    
-    if (event.data.success) {
-      alert("✅ Data berhasil disimpan ke Google Sheets!");
-    } else {
-      alert(`❌ Gagal menyimpan data: ${event.data.error}`);
+    // Validasi data
+    if (logs.length === 0) {
+        alert("Tidak ada data untuk diekspor!");
+        return;
     }
+
+    // Siapkan data
+    const data = {
+        typeAlat: document.getElementById("typeAlat").value || "N/A",
+        kapasitasBucket: document.getElementById("kapasitasBucket").value || "N/A",
+        metodeLoading: document.getElementById("metodeLoading").value || "N/A",
+        truckCount: truckCount.toString(),
+        logs: JSON.stringify(logs)
+    };
+
+    // Encode data untuk URL
+    const encodedData = Object.entries(data).map(
+        ([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    ).join("&");
     
-    // Bersihkan event listener
-    window.removeEventListener("message", handleMessage);
-  };
-  
-  window.addEventListener("message", handleMessage);
+    // URL proxy
+    const proxyUrl = "https://insoper.github.io/TMS-Pro-Spreadsheet/proxy.html";
+    
+    // Buka tab baru untuk proxy
+    const proxyWindow = window.open(
+        `${proxyUrl}?${encodedData}`,
+        "_blank",
+        "width=600,height=500"
+    );
+    
+    // Handler untuk response
+    const handleMessage = (event) => {
+        // Filter pesan yang tidak relevan
+        if (typeof event.data !== 'object') return;
+        
+        if (event.data.success) {
+            alert(event.data.message || "✅ Data berhasil disimpan!");
+            console.log("Detail:", event.data.details);
+        } else {
+            alert(`❌ ${event.data.error || "Gagal menyimpan data"}`);
+            console.error("Error:", event.data);
+        }
+    };
+    
+    // Tambahkan listener untuk waktu terbatas (10 detik)
+    window.addEventListener("message", handleMessage);
+    setTimeout(() => {
+        window.removeEventListener("message", handleMessage);
+    }, 10000);
 }
 </script>
 
