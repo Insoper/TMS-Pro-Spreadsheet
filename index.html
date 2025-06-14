@@ -1061,33 +1061,32 @@ function exportExcel() {
 
 <script>
 async function exportToGoogleSheets() {
-  // 1. Siapkan data
   const data = {
-    timestamp: new Date().toISOString(),
     typeAlat: document.getElementById("typeAlat").value,
     kapasitasBucket: document.getElementById("kapasitasBucket").value,
     metodeLoading: document.getElementById("metodeLoading").value,
     truckCount: truckCount,
-    logs: logs // Array dari langkah-langkah
+    logs: logs
   };
 
-  // 2. URL Google Apps Script (GANTI_DENGAN_URL_ANDA)
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec";
+  const scriptUrl = "https://script.google.com/macros/s/AKfycb.../exec";
 
   try {
-    // 3. Kirim data via GET dengan query parameter
-    const query = `data=${encodeURIComponent(JSON.stringify(data))}`;
-    const response = await fetch(`${scriptUrl}?${query}`, {
-      method: "GET",
-      headers: { "Content-Type": "text/plain" }
+    // Kirim data sebagai query parameters
+    const params = new URLSearchParams();
+    for (const key in data) {
+      params.append(key, typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key]);
+    }
+
+    const response = await fetch(`${scriptUrl}?${params.toString()}`, {
+      headers: { 'Content-Type': 'text/plain' }
     });
 
-    // 4. Handle response
-    const result = await response.text();
-    alert(result.includes("success") ? "✅ Data tersimpan!" : "❌ Error: " + result);
+    const result = await response.json();
+    alert(result.success ? "✅ Data tersimpan!" : "❌ Error: " + (result.error || "Unknown"));
   } catch (err) {
     alert("🚨 Gagal mengirim: " + err.message);
-    console.error("Error details:", err);
+    console.error("Detail error:", err);
   }
 }
 </script>
