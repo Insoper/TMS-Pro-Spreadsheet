@@ -1060,34 +1060,39 @@ function exportExcel() {
   
 
 <script>
-async function exportToGoogleSheets() {
-  const data = {
-    typeAlat: document.getElementById("typeAlat").value,
-    kapasitasBucket: document.getElementById("kapasitasBucket").value,
-    metodeLoading: document.getElementById("metodeLoading").value,
-    truckCount: truckCount,
-    logs: logs
-  };
+function exportToGoogleSheets() {
+    // 1. Siapkan data
+    const data = {
+        typeAlat: document.getElementById("typeAlat").value,
+        kapasitasBucket: document.getElementById("kapasitasBucket").value,
+        metodeLoading: document.getElementById("metodeLoading").value,
+        truckCount: truckCount,
+        logs: JSON.stringify(logs) // Convert array ke string
+    };
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycb.../exec";
+    // 2. URL proxy (sesuaikan dengan path repo Anda)
+    const proxyUrl = "https://insoper.github.io/TMS-Pro/proxy.html";
 
-  try {
-    // Kirim data sebagai query parameters
+    // 3. Format data sebagai URL parameters
     const params = new URLSearchParams();
     for (const key in data) {
-      params.append(key, typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key]);
+        params.append(key, data[key]);
     }
 
-    const response = await fetch(`${scriptUrl}?${params.toString()}`, {
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    // 4. Buka tab baru untuk proxy
+    const proxyWindow = window.open(`${proxyUrl}?${params.toString()}`, "_blank");
 
-    const result = await response.json();
-    alert(result.success ? "✅ Data tersimpan!" : "❌ Error: " + (result.error || "Unknown"));
-  } catch (err) {
-    alert("🚨 Gagal mengirim: " + err.message);
-    console.error("Detail error:", err);
-  }
+    // 5. Terima response dari proxy
+    window.addEventListener("message", (event) => {
+        if (event.origin === "https://insoper.github.io") {
+            if (event.data.success) {
+                alert("✅ Data berhasil disimpan!");
+                proxyWindow.close();
+            } else {
+                alert(`❌ Gagal: ${event.data.error}`);
+            }
+        }
+    });
 }
 </script>
 
