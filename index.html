@@ -1061,38 +1061,43 @@ function exportExcel() {
 
 <script>
 function exportToGoogleSheets() {
-    // 1. Siapkan data
-    const data = {
-        typeAlat: document.getElementById("typeAlat").value,
-        kapasitasBucket: document.getElementById("kapasitasBucket").value,
-        metodeLoading: document.getElementById("metodeLoading").value,
-        truckCount: truckCount,
-        logs: JSON.stringify(logs) // Convert array ke string
-    };
+  // 1. Validasi data
+  if (logs.length === 0) {
+    alert("Tidak ada data untuk diekspor!");
+    return;
+  }
 
-    // 2. URL proxy (sesuaikan dengan path repo Anda)
-    const proxyUrl = "https://insoper.github.io/TMS-Pro-Spreadsheet/proxy.html";
+  // 2. Siapkan data
+  const data = {
+    typeAlat: document.getElementById("typeAlat").value || "N/A",
+    kapasitasBucket: document.getElementById("kapasitasBucket").value || "N/A",
+    metodeLoading: document.getElementById("metodeLoading").value || "N/A",
+    truckCount: truckCount.toString(),
+    logs: JSON.stringify(logs)
+  };
 
-    // 3. Format data sebagai URL parameters
-    const params = new URLSearchParams();
-    for (const key in data) {
-        params.append(key, data[key]);
+  // 3. URL proxy (sesuaikan dengan path repo Anda)
+  const proxyUrl = "https://insoper.github.io/TMS-Pro-Spreadsheet/proxy.html";
+  
+  // 4. Buka tab baru untuk proxy
+  const proxyWindow = window.open(`${proxyUrl}?${new URLSearchParams(data).toString()}`, "_blank", "width=500,height=300");
+  
+  // 5. Terima response dari proxy
+  const handleMessage = (event) => {
+    // Sesuaikan origin dengan domain Anda
+    if (event.origin !== "https://insoper.github.io") return;
+    
+    if (event.data.success) {
+      alert("✅ Data berhasil disimpan ke Google Sheets!");
+    } else {
+      alert(`❌ Gagal menyimpan data: ${event.data.error}`);
     }
-
-    // 4. Buka tab baru untuk proxy
-    const proxyWindow = window.open(`${proxyUrl}?${params.toString()}`, "_blank");
-
-    // 5. Terima response dari proxy
-    window.addEventListener("message", (event) => {
-        if (event.origin === "https://insoper.github.io") {
-            if (event.data.success) {
-                alert("✅ Data berhasil disimpan!");
-                proxyWindow.close();
-            } else {
-                alert(`❌ Gagal: ${event.data.error}`);
-            }
-        }
-    });
+    
+    // Bersihkan event listener
+    window.removeEventListener("message", handleMessage);
+  };
+  
+  window.addEventListener("message", handleMessage);
 }
 </script>
 
