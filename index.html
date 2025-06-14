@@ -1061,25 +1061,27 @@ function exportExcel() {
 
 <script>
 function exportToGoogleSheets() {
+  // 1. Siapkan data
   const data = {
     typeAlat: document.getElementById("typeAlat").value,
     kapasitasBucket: document.getElementById("kapasitasBucket").value,
     metodeLoading: document.getElementById("metodeLoading").value,
     truckCount: truckCount,
-    logs: logs // Array dari langkah-langkah
+    logs: logs
   };
 
-  // Ganti URL_DEPLOY_ANDA dengan URL deployment Google Apps Script
+  // 2. Ganti URL_DEPLOY_ANDA dengan URL GAS Anda
   const scriptUrl = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec";
 
+  // 3. Kirim data dengan mode no-cors
   fetch(scriptUrl, {
     method: "POST",
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "application/json" }
+    mode: "no-cors", // Penting untuk bypass CORS
+    headers: { "Content-Type": "text/plain" }, // Ganti ke text/plain
+    body: JSON.stringify(data)
   })
-  .then(response => response.text())
-  .then(result => alert(result))
-  .catch(err => alert("Gagal mengirim: " + err));
+  .then(() => alert("Data terkirim (tanpa konfirmasi)"))
+  .catch(err => alert("Error: " + err));
 }
 </script>
 
