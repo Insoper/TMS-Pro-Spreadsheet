@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proxy for GAS</title>
+    <script>
+        async function forwardToGAS() {
+            // 1. Ambil parameter dari URL
+            const params = new URLSearchParams(window.location.search);
+            
+            // 2. URL Google Apps Script (GANTI_DENGAN_URL_ANDA)
+            const gasUrl = `https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec?${params.toString()}`;
+            
+            try {
+                // 3. Kirim request ke GAS
+                const response = await fetch(gasUrl);
+                const result = await response.text();
+                
+                // 4. Kirim balik ke PWA utama
+                window.parent.postMessage({
+                    success: true,
+                    data: result
+                }, "https://insoper.github.io");
+                
+            } catch (err) {
+                window.parent.postMessage({
+                    success: false,
+                    error: err.message
+                }, "https://insoper.github.io");
+            }
+        }
+        // Jalankan fungsi saat halaman load
+        window.onload = forwardToGAS;
+    </script>
+</head>
+<body>
+    <p>Processing request...</p>
+</body>
+</html>
