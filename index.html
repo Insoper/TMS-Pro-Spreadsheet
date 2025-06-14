@@ -1060,8 +1060,10 @@ function exportExcel() {
   
 
 <script>
-function exportToGoogleSheets() {
+async function exportToGoogleSheets() {
+  // 1. Siapkan data
   const data = {
+    timestamp: new Date().toISOString(),
     typeAlat: document.getElementById("typeAlat").value,
     kapasitasBucket: document.getElementById("kapasitasBucket").value,
     metodeLoading: document.getElementById("metodeLoading").value,
@@ -1069,21 +1071,24 @@ function exportToGoogleSheets() {
     logs: logs // Array dari langkah-langkah
   };
 
-  // Encode data sebagai query string
-  const query = Object.keys(data)
-    .map(key => `${key}=${encodeURIComponent(JSON.stringify(data[key]))}`)
-    .join('&');
+  // 2. URL Google Apps Script (GANTI_DENGAN_URL_ANDA)
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec";
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec"; // Ganti dengan URL deployment GAS
+  try {
+    // 3. Kirim data via GET dengan query parameter
+    const query = `data=${encodeURIComponent(JSON.stringify(data))}`;
+    const response = await fetch(`${scriptUrl}?${query}`, {
+      method: "GET",
+      headers: { "Content-Type": "text/plain" }
+    });
 
-  // Kirim via GET
-  fetch(`${scriptUrl}?${query}`)
-    .then(response => response.json())
-    .then(result => {
-      if (result.success) alert(result.message);
-      else alert("Error: " + result.error);
-    })
-    .catch(err => alert("Gagal mengirim: " + err));
+    // 4. Handle response
+    const result = await response.text();
+    alert(result.includes("success") ? "✅ Data tersimpan!" : "❌ Error: " + result);
+  } catch (err) {
+    alert("🚨 Gagal mengirim: " + err.message);
+    console.error("Error details:", err);
+  }
 }
 </script>
 
