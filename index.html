@@ -1074,7 +1074,7 @@ function exportToGoogleSheets() {
     .map(key => `${key}=${encodeURIComponent(JSON.stringify(data[key]))}`)
     .join('&');
 
-  const scriptUrl = "URL_DEPLOY_ANDA"; // Ganti dengan URL deployment GAS
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbzgTsxeoLU2rCx-2rvGxXWMpus13p1nXerKQLVOTPtkyunOa4lBIQrQuaUly1MPve7bhg/exec"; // Ganti dengan URL deployment GAS
 
   // Kirim via GET
   fetch(`${scriptUrl}?${query}`)
