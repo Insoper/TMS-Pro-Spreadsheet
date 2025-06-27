@@ -303,6 +303,21 @@ function togglePassword() {
   <option>Double Bench Loading</option>
 </select>
 
+<label>Jenis Material:</label>
+<select id="jenisMaterial">
+  <option value="">-- Pilih Material --</option>
+  <option value="0.9">Sand</option>
+  <option value="0.8">Sandy Clay</option>
+  <option value="0.7">Clay</option>
+  <option value="0.85">Gravelly Soil</option>
+  <option value="0.88">Gravel</option>
+  <option value="0.7">Solid or Rugged Gravel</option>
+  <option value="0.61">Limestone/Sandstone/Soft Rocks</option>
+  <option value="0.59">Granite/Basalt/Hard Rocks</option>
+  <option value="0.57">Rocks</option>
+</select>
+
+
 <button id="btnStart" onclick="startSession()" disabled>▶️ Mulai</button>
 <button id="btnPause" onclick="togglePause()" disabled>⏸️ Pause</button>
 <button id="btnCorrection" onclick="applyCorrection()" disabled>🗑️ Correction</button>
@@ -331,9 +346,8 @@ function togglePassword() {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   ">
     ⏱️ <span id="stepTimerValue">0.0</span> detik
-  </div>
+  </div>meto
 </div>
-
 
 
 <h3>Bucket Fill Factor:</h3>
@@ -415,6 +429,7 @@ function initializeForm() {
     }
   }
 
+  // Listener saat ganti type alat
   document.getElementById("typeAlat").addEventListener("change", function () {
     const type = this.value;
     const bucketSelect = document.getElementById("kapasitasBucket");
@@ -428,34 +443,42 @@ function initializeForm() {
       options = [12, 14];
     } else if (type === "PC3400-11M0") {
       options = [18, 19.7];
+    }
+
+    if (options.length > 0) {
+      options.forEach(val => {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val.toString().replace(".", ",");
+        bucketSelect.appendChild(opt);
+      });
     } else {
       const opt = document.createElement("option");
       opt.value = "";
       opt.textContent = "-- Isi Manual --";
       bucketSelect.appendChild(opt);
-      return;
     }
 
-    options.forEach(val => {
-      const opt = document.createElement("option");
-      opt.value = val;
-      opt.textContent = val.toString().replace(".", ",");
-      bucketSelect.appendChild(opt);
-    });
+    cekForm(); // Panggil cekForm setiap kali Type Alat berubah
   });
 
-  ['typeAlat', 'kapasitasBucket', 'metodeLoading'].forEach(id => {
+  // Listener untuk dropdown lain
+  ['kapasitasBucket', 'metodeLoading', 'jenisMaterial'].forEach(id => {
     document.getElementById(id).addEventListener('change', cekForm);
   });
-  cekForm();
+
+  cekForm(); // Cek awal
 }
 
 function cekForm() {
   const filled = document.getElementById('typeAlat').value &&
                  document.getElementById('kapasitasBucket').value &&
-                 document.getElementById('metodeLoading').value;
+                 document.getElementById('metodeLoading').value &&
+                 document.getElementById('jenisMaterial').value;
   document.getElementById('btnStart').disabled = !filled;
 }
+
+
 
 function setFill(btn, val) {
   if (!started) return;
@@ -775,7 +798,9 @@ function hitungProduksi() {
   const avgCycleTime = dumpCount > 0 ? totalPrimary / dumpCount : 0;
   const efficiency = totalPrimary / (totalPrimary + totalSecondary);
   const avgFill = logs.reduce((a,b)=>a+b.fillFactor,0) / logs.length;
-  const produksi = (bucket * avgFill * 3600 * efficiency) / (avgCycleTime || 1);
+  const swellFactor = parseFloat(document.getElementById("jenisMaterial").value) || 1;
+  const produksi = (bucket * avgFill * 3600 * efficiency * swellFactor) / (avgCycleTime || 1);
+
 
   const digToLoad = primary.filter(l => l.item === "Dig to Load");
   const swingLoaded = primary.filter(l => l.item === "Swing Loaded");
@@ -792,7 +817,9 @@ function hitungProduksi() {
 document.getElementById("output").innerHTML = `
   <p><strong>Type Alat:</strong> ${typeAlat}</p>
   <p><strong>Kapasitas Bucket:</strong> ${kapasitas} m³</p>
-  <p><strong>Metode Loading:</strong> ${metode}</p>      
+  <p><strong>Metode Loading:</strong> ${metode}</p>    
+  <p><strong>Jenis Material:</strong> ${document.getElementById("jenisMaterial").selectedOptions[0].text}</p>
+  <p><strong>Swell Factor:</strong> ${swellFactor}</p>
   <p><strong>Jumlah Truck:</strong> ${truckCount}</p>
 
   <hr>
