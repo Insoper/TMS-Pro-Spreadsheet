@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#007bff">
   <title>TMS Pro</title>
   <link rel="manifest" href="manifest.json">
@@ -10,25 +10,29 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Common styles */
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
       font-family: Arial, sans-serif;
-      padding: 15px;
-      margin: auto;
-      max-width: 960px;
-      font-size: 17px;
+      padding: 10px;
+      margin: 0;
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
     }
     
     .judul-besar {
-      font-size: 36px;
+      font-size: 24px;
       font-weight: bold;
       text-align: center;
-      margin: 20px 0 30px;
+      margin: 15px 0 20px;
     }
     
     h2, h3, label {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      margin: 10px 0 6px;
+      margin: 8px 0 5px;
     }
     
     select {
@@ -36,9 +40,9 @@
       font-size: 16px;
       border-radius: 6px;
       width: 100%;
-      max-width: 300px;
-      box-sizing: border-box;
+      border: 1px solid #ccc;
       margin-bottom: 8px;
+      background-color: white;
     }
     
     button {
@@ -46,7 +50,9 @@
       font-size: 16px;
       border-radius: 6px;
       border: 1px solid #888;
-      margin: 4px;
+      margin: 4px 0;
+      width: 100%;
+      min-height: 44px; /* Better touch target */
     }
     
     .button-group {
@@ -57,8 +63,7 @@
       background-color: #007bff;
       color: white;
       border: none;
-      width: 100%;
-      min-width: 140px;
+      min-width: auto;
     }
     
     .button-group button.active {
@@ -74,47 +79,47 @@
     .grid-2col {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
     
     .hasil, .resume {
       background: #f9f9f9;
-      padding: 15px;
-      margin-top: 15px;
+      padding: 12px;
+      margin-top: 12px;
       border-radius: 6px;
+      overflow-x: auto;
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 16px;
-      margin-top: 10px;
+      font-size: 14px;
+      margin-top: 8px;
+      min-width: 500px;
     }
     
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
     }
     
     .charts {
       display: flex;
-      flex-direction: row;
-      gap: 20px;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 15px;
       margin-top: 15px;
     }
     
     .charts canvas {
-      width: 48% !important;
+      width: 100% !important;
       height: auto !important;
     }
     
     .fill-factor-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      column-gap: 10px;
-      row-gap: 6px;
+      gap: 8px;
       margin-top: 4px;
       margin-bottom: 8px;
     }
@@ -125,8 +130,9 @@
       border: 1px solid #007bff;
       font-weight: bold;
       border-radius: 8px;
-      padding: 12px 0;
+      padding: 10px 0;
       transition: background-color 0.2s ease;
+      min-height: 50px;
     }
     
     .fill-factor-grid button.active {
@@ -141,29 +147,31 @@
     
     /* Login styles */
     #loginContainer {
-      max-width: 700px;
-      margin: 100px auto;
-      padding: 30px;
+      width: 100%;
+      max-width: 100%;
+      margin: 20px auto;
+      padding: 20px;
       border: 1px solid #ccc;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       background-color: #fff;
     }
     
     .login-content {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 30px;
+      gap: 20px;
     }
     
     .login-logo {
-      width: 120px;
+      width: 100px;
       height: auto;
       object-fit: contain;
     }
     
     .login-form {
-      flex: 1;
+      width: 100%;
     }
     
     .login-form input {
@@ -172,21 +180,20 @@
       margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      box-sizing: border-box;
+      font-size: 16px;
+      min-height: 44px;
     }
     
     .login-form button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #0066cc;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-    }
-    
-    .login-form button:hover {
-      background-color: #004999;
+      font-size: 16px;
+      margin-top: 10px;
     }
     
     .form-group {
@@ -197,40 +204,112 @@
     #stepTimer {
       display: none;
       font-weight: bold;
-      font-size: 18px;
-      padding: 10px 16px;
+      font-size: 16px;
+      padding: 8px 12px;
       border: 2px solid #007bff;
       border-radius: 8px;
       background-color: #f0f8ff;
-      min-width: 140px;
-      text-align: right;
+      text-align: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin: 10px 0;
     }
     
     /* View navigation */
     .view-container {
       display: none;
+      width: 100%;
+      max-width: 100%;
+      padding: 0 5px;
     }
     
     .nav-button {
       margin: 10px 0;
-      padding: 10px 15px;
+      padding: 12px;
       background-color: #007bff;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
     }
     
     /* iOS install prompt */
     #iosInstallPrompt {
       display: none;
-      padding: 15px;
+      padding: 12px;
       background: #fef7d1;
       border: 1px solid #e6c200;
-      font-size: 16px;
-      margin-top: 20px;
+      font-size: 14px;
+      margin-top: 15px;
       border-radius: 8px;
+      text-align: center;
+    }
+    
+    /* Truck counter */
+    #truckCounterContainer {
+      display: block;
+      margin: 10px 0;
+    }
+    
+    #truckCounterContainer button {
+      display: inline-block;
+      width: 50px;
+      margin: 0 5px;
+    }
+    
+    #truckCount {
+      display: inline-block;
+      min-width: 30px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    /* Button container for operation view */
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .button-row button {
+      flex: 1;
+    }
+    
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      body {
+        padding: 15px;
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      
+      .judul-besar {
+        font-size: 36px;
+      }
+      
+      .charts {
+        flex-direction: row;
+      }
+      
+      .charts canvas {
+        width: 48% !important;
+      }
+      
+      #loginContainer {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 30px;
+      }
+      
+      .login-content {
+        flex-direction: row;
+        align-items: center;
+        gap: 30px;
+      }
+      
+      .login-logo {
+        width: 120px;
+      }
     }
   </style>
 </head>
@@ -309,21 +388,21 @@
 <div id="operationView" class="view-container">
   <h1 class="judul-besar">TMS Pro</h1>
   
-  <button id="btnStart" onclick="startSession()" disabled>▶️ Mulai</button>
-  <button id="btnPause" onclick="togglePause()" disabled>⏸️ Pause</button>
-  <button id="btnEdit" onclick="startEdit()" disabled>✏️ Edit</button>
+  <div class="button-row">
+    <button id="btnStart" onclick="startSession()" disabled>▶️ Mulai</button>
+    <button id="btnPause" onclick="togglePause()" disabled>⏸️ Pause</button>
+    <button id="btnEdit" onclick="startEdit()" disabled>✏️ Edit</button>
+  </div>
 
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin: 10px 0;">
-    <div id="truckCounterContainer" style="display: block;">
-      <label><strong>Truck Counter:</strong></label><br>
-      <button onclick="updateTruckCount(-1)" id="btnMinus" disabled>-</button>
-      <span id="truckCount" style="margin: 0 10px;">0</span>
-      <button onclick="updateTruckCount(1)" id="btnPlus" disabled>+</button>
-    </div>
+  <div id="truckCounterContainer">
+    <label><strong>Truck Counter:</strong></label><br>
+    <button onclick="updateTruckCount(-1)" id="btnMinus" disabled>-</button>
+    <span id="truckCount">0</span>
+    <button onclick="updateTruckCount(1)" id="btnPlus" disabled>+</button>
+  </div>
 
-    <div id="stepTimer">
-      ⏱️ <span id="stepTimerValue">0.0</span> detik
-    </div>
+  <div id="stepTimer">
+    ⏱️ <span id="stepTimerValue">0.0</span> detik
   </div>
 
   <h3>Bucket Fill Factor:</h3>
