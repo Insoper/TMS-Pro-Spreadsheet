@@ -311,7 +311,6 @@
   
   <button id="btnStart" onclick="startSession()" disabled>▶️ Mulai</button>
   <button id="btnPause" onclick="togglePause()" disabled>⏸️ Pause</button>
-  <button id="btnCorrection" onclick="applyCorrection()" disabled>🗑️ Correction</button>
   <button id="btnEdit" onclick="startEdit()" disabled>✏️ Edit</button>
 
   <div style="display: flex; justify-content: space-between; align-items: flex-end; margin: 10px 0;">
@@ -524,7 +523,6 @@ function startSession() {
 
   document.getElementById('btnStart').disabled = true;
   document.getElementById('btnEdit').disabled = true;
-  document.getElementById('btnCorrection').disabled = true;
   document.getElementById('btnPause').disabled = true;
 
   // Aktifkan counter
@@ -629,11 +627,10 @@ function selesaiSession() {
   clearInterval(stepTimerInterval);
   document.getElementById('stepTimer').style.display = 'none';
 
-  // Nonaktifkan tombol pause dan correction
+  // Nonaktifkan tombol pause
   paused = false;
   document.getElementById("btnPause").disabled = true;
   document.getElementById("btnPause").innerText = "⏸️ Pause";
-  document.getElementById("btnCorrection").disabled = true;
 
   const btnStart = document.getElementById('btnStart');
   btnStart.innerText = "🔄 Reset";
@@ -722,8 +719,7 @@ function togglePause() {
   // Update button text
   document.getElementById("btnPause").innerText = paused ? "▶️ Resume" : "⏸️ Pause";
   
-  // Enable/disable correction and edit buttons
-  document.getElementById("btnCorrection").disabled = !paused;
+  // Enable/disable edit button
   document.getElementById("btnEdit").disabled = !paused;
 
   // Get all relevant buttons
@@ -780,53 +776,6 @@ function togglePause() {
     document.getElementById('btnSelesai').disabled = true;
   }
 }
-
-function applyCorrection() {
-  if (!paused || logs.length === 0) return;
-
-  // Remove the last log entry
-  const removed = logs.pop();
-  correctionIndex++;
-
-  // Update the lastLabel and lastTime to the previous step (if any)
-  if (logs.length > 0) {
-    const lastLog = logs[logs.length - 1];
-    lastLabel = { category: lastLog.category, item: lastLog.item };
-    
-    // Calculate the correct time adjustment
-    const now = Date.now();
-    const adjustedTime = now - (removed.durasi * 1000) - totalPausedTime;
-    lastTime = adjustedTime;
-    
-    // Reset timer display without starting it
-    document.getElementById('stepTimerValue').innerText = "0.0";
-    document.getElementById('stepTimer').style.display = 'none';
-    clearInterval(stepTimerInterval);
-    
-    // Reset timing variables
-    stepStartTime = now;
-    stepElapsedTime = 0;
-    pauseStartTime = null;
-  } else {
-    // If no logs left, reset everything
-    lastLabel = null;
-    lastTime = null;
-    clearInterval(stepTimerInterval);
-    document.getElementById('stepTimer').style.display = 'none';
-  }
-
-  // Update UI
-  document.querySelectorAll('#primaryButtons button, #secondaryButtons button').forEach(b => b.classList.remove('active'));
-
-  alert(`Langkah "${removed.item}" telah dihapus (${correctionIndex} kali)`);
-
-  // Stay in pause mode after correction
-  paused = true;
-  document.getElementById("btnPause").innerText = "▶️ Resume";
-  document.getElementById("btnCorrection").disabled = true;
-  document.getElementById("btnEdit").disabled = true;
-}
-
 
 function startEdit() {
   if (!paused || !lastLabel) return;
