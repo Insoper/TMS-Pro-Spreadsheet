@@ -7,6 +7,7 @@
   <title>TMS Pro</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Common styles */
     * {
@@ -437,7 +438,7 @@
   <button id="btnExportPDF" onclick="exportPDF()" disabled>🧾 Export ke PDF</button>
   <button id="btnExportExcel" onclick="exportExcel()" disabled>📄 Export ke Excel</button>
   <button id="btnExportSheets" onclick="exportToGoogleSheets()" disabled>📤 Export ke Google Sheets</button>
-  <button id="btnBackToInput" class="nav-button" onclick="showInputAlatView()" disabled>Kembali ke Input Alat</button>
+  <button class="nav-button" onclick="showInputAlatView()">Kembali ke Input Alat</button>
 
   <div class="hasil" id="output"></div>
   <div class="resume" id="resume"></div>
@@ -602,7 +603,6 @@ function startSession() {
   document.getElementById('btnStart').disabled = true;
   document.getElementById('btnEdit').disabled = true;
   document.getElementById('btnPause').disabled = true;
-  document.getElementById('btnBackToInput').disabled = true;
 
   // Aktifkan counter
   document.getElementById('truckCounterContainer').style.display = 'block';
@@ -698,7 +698,6 @@ function selesaiSession() {
   document.querySelectorAll('#operationView button').forEach(b => b.disabled = true);
   document.getElementById('btnStart').disabled = false;
   document.getElementById('btnSummary').disabled = false;
-  document.getElementById('btnBackToInput').disabled = false;
 
   // Nonaktifkan counter dan timer
   document.getElementById('btnPlus').disabled = true;
@@ -762,9 +761,6 @@ function resetSession() {
     btn.classList.remove('active');
     if (btn.innerText === "1.0") btn.classList.add('active');
   });
-
-  // Nonaktifkan tombol kembali ke input
-  document.getElementById('btnBackToInput').disabled = true;
 
   // Cek form lagi
   cekForm();
@@ -1198,21 +1194,5 @@ function exportToGoogleSheets() {
 <script src="jspdf.plugin.autotable.min.js"></script>
 <script src="xlsx.full.min.js"></script>
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/TMS-Pro-Spreadsheet/service-worker.js', { 
-      scope: '/TMS-Pro-Spreadsheet/' 
-    })
-    .then(reg => {
-      console.log('ServiceWorker registered with scope:', reg.scope);
-      reg.update(); // Periksa update
-    })
-    .catch(err => {
-      console.error('ServiceWorker registration failed:', err);
-    });
-  });
-}
-</script>
 </body>
 </html>
