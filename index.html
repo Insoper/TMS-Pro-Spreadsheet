@@ -459,18 +459,55 @@ function showLoginView() {
   document.getElementById('loginView').style.display = 'block';
   document.getElementById('inputAlatView').style.display = 'none';
   document.getElementById('operationView').style.display = 'none';
+  appState.currentView = 'login';
+  
+  // Save session data
+  saveSessionData();
 }
 
+/**
+ * Shows the equipment input view and hides other views
+ */
 function showInputAlatView() {
+  // Hide all views first
   document.getElementById('loginView').style.display = 'none';
-  document.getElementById('inputAlatView').style.display = 'block';
   document.getElementById('operationView').style.display = 'none';
+  
+  // Show input view
+  document.getElementById('inputAlatView').style.display = 'block';
+  
+  // Update form button state
+  cekForm();
+  
+  // Update app state
+  appState.currentView = 'input';
+  
+  // Save session data
+  saveSessionData();
+  
+  // Trigger bucket options update based on selected equipment
+  const event = new Event('change');
+  elements.typeAlat.dispatchEvent(event);
 }
 
+/**
+ * Shows the operation view and hides other views
+ */
 function showOperationView() {
+  // Hide all views first
   document.getElementById('loginView').style.display = 'none';
   document.getElementById('inputAlatView').style.display = 'none';
+  
+  // Show operation view
   document.getElementById('operationView').style.display = 'block';
+  
+  // Update app state
+  appState.currentView = 'operation';
+  
+  // Initialize operation view components
+  initializeOperationView();
+  
+  // Save session data
   saveSessionData();
 }
 
@@ -489,64 +526,73 @@ let editing = false;
 // Save session data to localStorage
 function saveSessionData() {
   const sessionData = {
+    // Form data
     typeAlat: document.getElementById("typeAlat").value,
     kapasitasBucket: document.getElementById("kapasitasBucket").value,
     metodeLoading: document.getElementById("metodeLoading").value,
     jenisMaterial: document.getElementById("jenisMaterial").value,
+    
+    // Session state
     sessionActive: started,
-    logs,
-    currentFill,
-    started,
-    lastTime,
-    lastLabel,
-    truckCount,
-    correctionIndex,
-    stepElapsedTime,
-    pauseStartTime,
-    totalPausedTime,
-    editing,
-    paused
+    currentView: started ? 'operation' : 
+                document.getElementById('inputAlatView').style.display === 'block' ? 'input' : 'login',
+    
+    // Operation data
+    logs: logs,
+    currentFill: currentFill,
+    started: started,
+    lastTime: lastTime,
+    lastLabel: lastLabel,
+    truckCount: truckCount,
+    correctionIndex: correctionIndex,
+    
+    // Timer state
+    stepElapsedTime: stepElapsedTime,
+    pauseStartTime: pauseStartTime,
+    totalPausedTime: totalPausedTime,
+    
+    // UI state
+    editing: editing,
+    paused: paused,
+    
+    // Additional metadata
+    lastSaved: new Date().toISOString(),
+    version: 1.2
   };
-  localStorage.setItem("tmsSessionData", JSON.stringify(sessionData));
+  
+  try {
+    localStorage.setItem("tmsSessionData", JSON.stringify(sessionData));
+  } catch (e) {
+    console.error("Error saving session data:", e);
+    // Handle storage full error if needed
+    if (e.name === 'QuotaExceededError') {
+      alert("Penyimpanan lokal penuh. Data sesi tidak dapat disimpan.");
+    }
+  }
 }
 
 // Initialize the app
 function initializeForm() {
-  showLoginView();
-  
-  // Check for saved login
-  const saved = localStorage.getItem("loginUser");
-  if (saved) {
-    try {
-      const { user, pass, time } = JSON.parse(saved);
-      const now = Date.now();
-      const diffHours = (now - time) / (1000 * 60 * 60);
-
-      if (diffHours <= 24) {
-        document.getElementById("username").value = user;
-        document.getElementById("password").value = pass;
-      } else {
-        localStorage.removeItem("loginUser");
-      }
-    } catch (e) {
-      console.error("Error parsing saved login", e);
-    }
-  }
-
-  // Check for saved session data
+  // 1. First, check for existing session data
   const sessionData = localStorage.getItem("tmsSessionData");
+  
+  // 2. If session data exists, try to restore it
   if (sessionData) {
     try {
       const data = JSON.parse(sessionData);
       
-      // Restore form selections
+      // 3. Restore all form selections
       if (data.typeAlat) document.getElementById("typeAlat").value = data.typeAlat;
       if (data.kapasitasBucket) document.getElementById("kapasitasBucket").value = data.kapasitasBucket;
       if (data.metodeLoading) document.getElementById("metodeLoading").value = data.metodeLoading;
       if (data.jenisMaterial) document.getElementById("jenisMaterial").value = data.jenisMaterial;
       
-      // Restore operation data if session was active
-      if (data.sessionActive) {
+      // 4. Determine which view to show based on saved state
+      if (data.sessionActive || data.currentView === 'operation') {
+        // Case 1: Was in operation view (either active session or just viewing results)
+        showOperationView();
+        
+        // Restore all operation variables
         logs = data.logs || [];
         currentFill = data.currentFill || 1.0;
         started = data.started || false;
@@ -560,61 +606,98 @@ function initializeForm() {
         editing = data.editing || false;
         paused = data.paused || false;
 
+        // Update UI elements
         document.getElementById('truckCount').innerText = truckCount;
         
-        // Update UI based on restored state
+        // If session was active, restore the working state
         if (started) {
           document.getElementById('btnStart').disabled = true;
           document.getElementById('btnPause').disabled = false;
           document.getElementById('btnEdit').disabled = !paused;
           document.getElementById('btnSelesai').disabled = paused ? false : true;
+          document.getElementById('btnKembaliInput').disabled = true;
           
           document.getElementById('truckCounterContainer').style.display = 'block';
           document.getElementById('btnPlus').disabled = false;
           document.getElementById('btnMinus').disabled = false;
           
-          // Update fill factor buttons
+          // Restore fill factor buttons state
           document.querySelectorAll('#fillFactors button').forEach(btn => {
             btn.disabled = !(lastLabel && (lastLabel.item === "Dig to Load" || lastLabel.item === "Swing Loaded"));
             btn.classList.toggle('active', parseFloat(btn.textContent) === currentFill);
           });
           
-          // Update work buttons
+          // Restore work buttons state
           document.querySelectorAll('#primaryButtons button, #secondaryButtons button').forEach(btn => {
             btn.disabled = paused;
             btn.classList.toggle('active', lastLabel && btn.textContent.includes(lastLabel.item));
           });
           
-          // Update timer if step was active
+          // Handle timer restoration
           if (lastTime && !paused) {
-            resetStepTimer();
+            resetStepTimer(); // Restart the timer if was running
           } else if (stepElapsedTime > 0) {
+            // Show elapsed time if paused
             document.getElementById('stepTimer').style.display = 'block';
             document.getElementById('stepTimerValue').innerText = stepElapsedTime.toFixed(1);
           }
           
+          // Update pause button text
           document.getElementById("btnPause").innerText = paused ? "▶️ Resume" : "⏸️ Pause";
         }
+        
+        // Skip showing login view since we're restoring operation view
+        return;
+      }
+      else if (data.currentView === 'input') {
+        // Case 2: Was in input alat view
+        showInputAlatView();
+        return;
       }
     } catch (e) {
       console.error("Error parsing session data", e);
+      // If corrupted, clear the bad data
       localStorage.removeItem("tmsSessionData");
     }
   }
 
-  // iOS install prompt
+  // 5. Default case: Show login view if no valid session
+  showLoginView();
+  
+  // 6. Check for saved login credentials
+  const savedLogin = localStorage.getItem("loginUser");
+  if (savedLogin) {
+    try {
+      const { user, pass, time } = JSON.parse(savedLogin);
+      const now = Date.now();
+      const diffHours = (now - time) / (1000 * 60 * 60);
+
+      // Only auto-fill if within 24 hours
+      if (diffHours <= 24) {
+        document.getElementById("username").value = user;
+        document.getElementById("password").value = pass;
+      } else {
+        localStorage.removeItem("loginUser");
+      }
+    } catch (e) {
+      console.error("Error parsing saved login", e);
+    }
+  }
+
+  // 7. iOS install prompt
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
   const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
   if (isIOS && !isInStandaloneMode) {
     document.getElementById('iosInstallPrompt').style.display = 'block';
   }
 
-  // Type alat change listener
+  // 8. Setup event listeners for form elements
   document.getElementById("typeAlat").addEventListener("change", function() {
     const type = this.value;
     const bucketSelect = document.getElementById("kapasitasBucket");
     bucketSelect.innerHTML = '<option value="">-- Pilih Kapasitas --</option>';
 
+    // Set bucket options based on equipment type
     let options = [];
     if (type === "PC1250-8" || type === "PC1250-11R") {
       options = [6.7, 7.5];
@@ -637,11 +720,12 @@ function initializeForm() {
       opt.textContent = "-- Isi Manual --";
       bucketSelect.appendChild(opt);
     }
+    
     cekForm();
     saveSessionData();
   });
 
-  // Other dropdown listeners
+  // Setup other dropdown listeners
   ['kapasitasBucket', 'metodeLoading', 'jenisMaterial'].forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
       cekForm();
@@ -649,6 +733,7 @@ function initializeForm() {
     });
   });
 
+  // Initial form check
   cekForm();
 }
 
@@ -660,6 +745,15 @@ function cekForm() {
   document.getElementById('btnStart').disabled = !filled;
   document.getElementById('btnNextToOperation').disabled = !filled;
 }
+
+  /**
+ * Checks if form is complete
+ */
+function isFormComplete() {
+  return elements.typeAlat.value &&
+         elements.kapasitasBucket.value &&
+         elements.metodeLoading.value &&
+         elements.jenisMaterial.value;
 
 function checkLogin() {
   const user = document.getElementById('username').value;
@@ -688,29 +782,77 @@ function setFill(btn, val) {
 }
 
 function startSession() {
+  // Initialize session variables
   started = true;
+  logs = [];
+  currentFill = 1.0;
   lastTime = null;
   lastLabel = null;
-  logs = [];
   truckCount = 0;
-  document.getElementById('truckCount').innerText = truckCount;
+  correctionIndex = 0;
+  stepElapsedTime = 0;
+  pauseStartTime = null;
+  totalPausedTime = 0;
+  editing = false;
+  paused = false;
 
-  document.querySelectorAll('#operationView button').forEach(btn => {
-    if (btn.id !== 'btnStart') btn.disabled = true;
-  });
+  // Update UI elements
+  document.getElementById('truckCount').textContent = '0';
+  document.getElementById('stepTimerValue').textContent = '0.0';
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('resume').innerHTML = '';
 
+  // Set button states
   document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnPause').disabled = false;
   document.getElementById('btnEdit').disabled = true;
-  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnSelesai').disabled = true;
+  document.getElementById('btnKembaliInput').disabled = true;
+  document.getElementById('btnSummary').disabled = true;
+  document.getElementById('btnExportPDF').disabled = true;
+  document.getElementById('btnExportExcel').disabled = true;
+  document.getElementById('btnExportSheets').disabled = true;
 
-  // Aktifkan counter
+  // Enable truck counter
   document.getElementById('truckCounterContainer').style.display = 'block';
   document.getElementById('btnPlus').disabled = false;
   document.getElementById('btnMinus').disabled = false;
-  document.querySelectorAll('#primaryButtons button, #secondaryButtons button').forEach(b => b.disabled = false);
-  correctionIndex = 0;
-  
+
+  // Enable operation buttons
+  document.querySelectorAll('#primaryButtons button, #secondaryButtons button').forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('active');
+  });
+
+  // Set default fill factor
+  document.querySelectorAll('#fillFactors button').forEach(btn => {
+    btn.disabled = true; // Initially disabled until Dig/Swing
+    if (btn.textContent === '1.0') {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Reset charts if any
+  const pieChart = document.getElementById('pieChart').chart;
+  const barChart = document.getElementById('barChart').chart;
+  if (pieChart) pieChart.destroy();
+  if (barChart) barChart.destroy();
+
+  // Show timer
+  document.getElementById('stepTimer').style.display = 'block';
+
+  // Change start button to reset function
+  const startBtn = document.getElementById('btnStart');
+  startBtn.textContent = '🔄 Reset';
+  startBtn.onclick = resetSession;
+
+  // Save session
   saveSessionData();
+
+  // Log start event
+  console.log('New measurement session started at', new Date().toLocaleTimeString());
 }
 
 function addStep(btn, category, item) {
