@@ -7,7 +7,7 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './logo.png',
-  './chart.min.js',
+  './chart.js',
   './html2canvas.min.js',
   './jspdf.umd.min.js',
   './jspdf.plugin.autotable.min.js',
