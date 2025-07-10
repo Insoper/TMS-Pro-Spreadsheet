@@ -7,7 +7,6 @@
   <title>TMS Pro</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png" type="image/png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Common styles */
     * {
@@ -1198,6 +1197,31 @@ function exportToGoogleSheets() {
 <script src="jspdf.umd.min.js"></script>
 <script src="jspdf.plugin.autotable.min.js"></script>
 <script src="xlsx.full.min.js"></script>
+
+<script>
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').then(
+      function(registration) {
+        console.log('ServiceWorker registration successful');
+      }, 
+      function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      }
+    );
+  });
+}
+
+// Deteksi status koneksi
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+function updateOnlineStatus() {
+  if (!navigator.onLine) {
+    alert("Anda sedang offline. Aplikasi tetap bisa digunakan tetapi beberapa fitur mungkin terbatas.");
+  }
+}
 
 </body>
 </html>
