@@ -1213,15 +1213,6 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
-// Deteksi status koneksi
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-function updateOnlineStatus() {
-  if (!navigator.onLine) {
-    alert("Anda sedang offline. Aplikasi tetap bisa digunakan tetapi beberapa fitur mungkin terbatas.");
-  }
-}
 </script>
 </body>
 </html>
