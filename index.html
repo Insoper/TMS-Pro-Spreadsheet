@@ -523,6 +523,13 @@ let pauseStartTime = null;
 let totalPausedTime = 0;
 let editing = false;
 
+  // Deklarasi elements di awal
+const elements = {
+  typeAlat: document.getElementById('typeAlat'),
+  kapasitasBucket: document.getElementById('kapasitasBucket'),
+  metodeLoading: document.getElementById('metodeLoading'),
+  jenisMaterial: document.getElementById('jenisMaterial')
+
 // Save session data to localStorage
 function saveSessionData() {
   const sessionData = {
@@ -692,10 +699,9 @@ function initializeForm() {
   }
 
   // 8. Setup event listeners for form elements
-  document.getElementById("typeAlat").addEventListener("change", function() {
+  elements.typeAlat.addEventListener("change", function() {
     const type = this.value;
-    const bucketSelect = document.getElementById("kapasitasBucket");
-    bucketSelect.innerHTML = '<option value="">-- Pilih Kapasitas --</option>';
+    elements.kapasitasBucket.innerHTML = '<option value="">-- Pilih Kapasitas --</option>';
 
     // Set bucket options based on equipment type
     let options = [];
@@ -711,14 +717,14 @@ function initializeForm() {
       options.forEach(val => {
         const opt = document.createElement("option");
         opt.value = val;
-        opt.textContent = val.toString().replace(".", ",");
-        bucketSelect.appendChild(opt);
+        opt.textContent = val.toString();
+        elements.kapasitasBucket.appendChild(opt);
       });
     } else {
       const opt = document.createElement("option");
       opt.value = "";
       opt.textContent = "-- Isi Manual --";
-      bucketSelect.appendChild(opt);
+      elements.kapasitasBucket.appendChild(opt);
     }
     
     cekForm();
