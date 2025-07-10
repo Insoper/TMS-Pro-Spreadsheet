@@ -1201,12 +1201,11 @@ function exportToGoogleSheets() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/TMS-Pro-Spreadsheet/service-worker.js', { 
-      scope: '/TMS-Pro-Spreadsheet/' 
+    navigator.serviceWorker.register('/service-worker.js', { 
+      scope: '/' 
     })
     .then(reg => {
-      console.log('ServiceWorker registered with scope:', reg.scope);
-      reg.update(); // Periksa update
+      console.log('ServiceWorker registration successful with scope:', reg.scope);
     })
     .catch(err => {
       console.error('ServiceWorker registration failed:', err);
