@@ -1199,18 +1199,18 @@ function exportToGoogleSheets() {
 <script src="xlsx.full.min.js"></script>
 
 <script>
-// Ganti kode registrasi service worker dengan ini:
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-      .then(reg => {
-        console.log('ServiceWorker registration successful with scope: ', reg.scope);
-        // Periksa update setiap kali halaman dimuat
-        reg.update();
-      })
-      .catch(err => {
-        console.log('ServiceWorker registration failed: ', err);
-      });
+    navigator.serviceWorker.register('/TMS-Pro-Spreadsheet/service-worker.js', { 
+      scope: '/TMS-Pro-Spreadsheet/' 
+    })
+    .then(reg => {
+      console.log('ServiceWorker registered with scope:', reg.scope);
+      reg.update(); // Periksa update
+    })
+    .catch(err => {
+      console.error('ServiceWorker registration failed:', err);
+    });
   });
 }
 </script>
