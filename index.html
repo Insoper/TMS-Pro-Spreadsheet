@@ -1199,17 +1199,12 @@ function exportToGoogleSheets() {
 <script src="xlsx.full.min.js"></script>
 
 <script>
-// Service Worker Registration
+// Di akhir body atau dalam script utama
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js').then(
-      function(registration) {
-        console.log('ServiceWorker registration successful');
-      }, 
-      function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      }
-    );
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('SW registered:', reg))
+      .catch(err => console.error('SW registration failed:', err));
   });
 }
 
