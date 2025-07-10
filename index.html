@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#007bff">
   <title>TMS Pro</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <style>
     /* Common styles */
     * {
@@ -1191,27 +1192,85 @@ function exportToGoogleSheets() {
 }
 </script>
 
-<!-- External scripts -->
-<script src="chart.js"></script>
-<script src="html2canvas.min.js"></script>
-<script src="jspdf.umd.min.js"></script>
-<script src="jspdf.plugin.autotable.min.js"></script>
-<script src="xlsx.full.min.js"></script>
-
 <script>
+// [Keep all your existing JavaScript functions exactly as they are]
+// ... (all your original JavaScript content remains unchanged) ...
+
+// Add this enhanced service worker registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js', { 
-      scope: '/' 
-    })
-    .then(reg => {
-      console.log('ServiceWorker registration successful with scope:', reg.scope);
-    })
-    .catch(err => {
-      console.error('ServiceWorker registration failed:', err);
-    });
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful with scope:', registration.scope);
+        
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update().then(() => {
+            console.log('Checking for service worker update');
+          });
+        }, 60 * 60 * 1000); // Check every hour
+        
+        // Listen for controller change (update available)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      })
+      .catch(err => {
+        console.error('ServiceWorker registration failed:', err);
+      });
   });
 }
+
+// Add beforeinstallprompt handler for better PWA installation
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later
+  deferredPrompt = e;
+  console.log('PWA installation available');
+  
+  // Show your custom install button if needed
+  // document.getElementById('installButton').style.display = 'block';
+});
+
+// [Keep all other existing JavaScript functions]
+</script>
+
+<!-- External scripts with fallback loading -->
+<script src="/chart.js"></script>
+<script src="/html2canvas.min.js"></script>
+<script src="/jspdf.umd.min.js"></script>
+<script src="/jspdf.plugin.autotable.min.js"></script>
+<script src="/xlsx.full.min.js"></script>
+
+<!-- Fallback script loading -->
+<script>
+// Ensure critical scripts are loaded
+function loadScript(src, onload) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => {
+      onload && onload();
+      resolve();
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+// Load scripts with fallback
+Promise.all([
+  loadScript('/chart.js'),
+  loadScript('/html2canvas.min.js'),
+  loadScript('/jspdf.umd.min.js'),
+  loadScript('/jspdf.plugin.autotable.min.js'),
+  loadScript('/xlsx.full.min.js')
+]).catch(err => {
+  console.error('Failed to load external scripts:', err);
+  // Implement fallback behavior here if needed
+});
 </script>
 </body>
 </html>
