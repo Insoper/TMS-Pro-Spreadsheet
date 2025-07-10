@@ -1,62 +1,47 @@
-// service-worker.js
-const CACHE_NAME = 'tms-pro-v1.1';
+const CACHE_NAME = 'tms-pro-v1.2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/logo.png',
-  '/chart.js',
-  '/html2canvas.min.js',
-  '/jspdf.umd.min.js',
-  '/jspdf.plugin.autotable.min.js',
-  '/xlsx.full.min.js',
-  // Tambahkan semua asset penting lainnya
+  '/TMS-Pro-Spreadsheet/',
+  '/TMS-Pro-Spreadsheet/index.html',
+  '/TMS-Pro-Spreadsheet/proxy.html',
+  '/TMS-Pro-Spreadsheet/manifest.json',
+  '/TMS-Pro-Spreadsheet/icon-192.png',
+  '/TMS-Pro-Spreadsheet/icon-512.png',
+  '/TMS-Pro-Spreadsheet/logo.png',
+  '/TMS-Pro-Spreadsheet/chart.js',
+  '/TMS-Pro-Spreadsheet/html2canvas.min.js',
+  '/TMS-Pro-Spreadsheet/jspdf.umd.min.js',
+  '/TMS-Pro-Spreadsheet/jspdf.plugin.autotable.min.js',
+  '/TMS-Pro-Spreadsheet/xlsx.full.min.js'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        // Gunakan Promise.all untuk menangani error individual
+        return Promise.all(
+          ASSETS.map(asset => {
+            return fetch(asset)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`Failed to fetch ${asset}: ${response.status}`);
+                }
+                return cache.put(asset, response);
+              })
+              .catch(err => {
+                console.error('Failed to cache:', asset, err);
+                // Lanjutkan meskipun ada yang gagal
+              });
+          })
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('fetch', event => {
-  // Handle semua request, termasuk dari origin lain untuk resource eksternal
   event.respondWith(
     caches.match(event.request)
-      .then(cached => {
-        // Jika ada di cache, kembalikan
-        if (cached) return cached;
-        
-        // Jika tidak, fetch dari network
-        return fetch(event.request)
-          .then(response => {
-            // Jika response valid, cache untuk penggunaan berikutnya
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put(event.request, responseToCache));
-            
-            return response;
-          });
-      })
-  );
-});
-
-self.addEventListener('activate', event => {
-  // Hapus cache lama
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      );
-    })
+      .then(cached => cached || fetch(event.request))
   );
 });
