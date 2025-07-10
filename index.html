@@ -1199,18 +1199,20 @@ function exportToGoogleSheets() {
 <script src="xlsx.full.min.js"></script>
 
 <script>
+// Ganti kode registrasi service worker dengan ini:
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
       .then(reg => {
-        console.log('Scope: ', reg.scope);
-        reg.addEventListener('updatefound', () => {
-          console.log('New worker installing');
-        });
+        console.log('ServiceWorker registration successful with scope: ', reg.scope);
+        // Periksa update setiap kali halaman dimuat
+        reg.update();
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
       });
   });
 }
-
 // Deteksi status koneksi
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
