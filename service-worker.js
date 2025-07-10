@@ -1,58 +1,67 @@
-const CACHE_NAME = 'tms-cache';
-
-const urlsToCache = [
+const CACHE_NAME = 'tms-pro-v1';
+const ASSETS = [
   '/',
-  '/index.html',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/service-worker.js',
-  '/chart.js',
+  '/logo.png',
+  '/chart.min.js',
   '/html2canvas.min.js',
   '/jspdf.umd.min.js',
   '/jspdf.plugin.autotable.min.js',
   '/xlsx.full.min.js'
 ];
 
-// Install SW dan simpan file ke cache
-self.addEventListener('install', function(event) {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      console.log('[SW] Caching app shell...');
-      return cache.addAll(urlsToCache);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting(); // Langsung aktifkan service worker baru
 });
 
-// Aktifkan SW dan hapus cache lama jika ada
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(name) {
-          if (name !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
-          }
-        })
-      );
-    })
+    caches.keys().then(keys => 
+      Promise.all(
+        keys.map(key => key !== CACHE_NAME && caches.delete(key))
+      )
+    )
   );
-  self.clients.claim(); // Kontrol semua tab
+  event.waitUntil(self.clients.claim());
 });
 
-// Intersepsi fetch: pakai cache dulu, baru jaringan
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  
   event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request).catch(() => {
-        // Optional: fallback untuk halaman HTML jika offline
+    caches.match(event.request)
+      .then(cached => {
+        // Return cached version if available
+        if (cached) return cached;
+        
+        // Fallback for HTML
         if (event.request.mode === 'navigate') {
           return caches.match('/index.html');
         }
-      });
-    })
+        
+        // Try network for other files
+        return fetch(event.request)
+          .then(res => {
+            // Cache new responses
+            const resClone = res.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(event.request, resClone));
+            return res;
+          })
+          .catch(() => {
+            // Additional fallbacks can be added here
+            return new Response('Offline', {
+              status: 503,
+              statusText: 'Service Unavailable'
+            });
+          });
+      })
   );
 });
